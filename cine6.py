@@ -24,7 +24,7 @@ STREAM_KEY = "3628247749:CP9SdqFTFOg3vd_nWef_Aw"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
-STREAM_SOURCE = "https://cdn.codenet.lol/streamgo/stremgo123/4864.m3u8"
+STREAM_SOURCE = "https://stream41.radyotelekom.com.tr/stream/m3u8/bfa921dfddb1846b74069b68904d64e6/bfa921dfddb1846b74069b68904d64e6.m3u8"
 
 LOGO_URL = "https://raw.githubusercontent.com/mutlumedya/cine/refs/heads/main/telegram.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
