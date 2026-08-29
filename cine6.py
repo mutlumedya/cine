@@ -24,8 +24,7 @@ STREAM_KEY = "3628247749:CP9SdqFTFOg3vd_nWef_Aw"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
-STREAM_SOURCE = "https://cdn.codenet.work/streamgo/stremgo123/4864.m3u8"  # 🔴 BURAYI DEĞİŞTİR!
-# VEYA direkt video URL'si: "https://example.com/video.mp4"
+STREAM_SOURCE = "https://cdn.codenet.lol/streamgo/stremgo123/4864.m3u8"
 
 LOGO_URL = "https://i.hizliresim.com/uqid8yei.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
@@ -64,7 +63,6 @@ def sure_guncelleyici(durdur_event):
     """Arka planda saniyede bir title.txt dosyasını günceller."""
     while not durdur_event.is_set():
         try:
-            # Canlı yayın olduğu için süre göstermiyoruz, sadece başlık
             with open("title.txt", "w", encoding="utf-8") as f:
                 f.write(STREAM_TITLE)
         except Exception:
@@ -78,7 +76,6 @@ def start_stream():
             print_colored(Colors.BLUE, f"   Kaynak: {STREAM_SOURCE}")
             print_colored(Colors.BLUE, f"   Hedef: {rtmp_server}")
 
-            # Süre güncelleyici thread (sadece başlık için)
             durdur_event = threading.Event()
             guncelleyici = threading.Thread(
                 target=sure_guncelleyici,
@@ -87,9 +84,23 @@ def start_stream():
             )
             guncelleyici.start()
 
-            # FFmpeg komutu - M3U8 için optimize edildi
+            # FFmpeg komutu - DÜZELTİLDİ
+            # Önce tüm input'ları belirt, sonra filtre ve output ayarlarını yap
+            command = [
+                'ffmpeg',
+                '-user_agent', STREAM_USER_AGENT,
+                '-re',
+                '-i', STREAM_SOURCE,
+                # M3U8 için özel parametreler (input'a ait)
+                '-analyzeduration', '2147483647',
+                '-probesize', '2147483647',
+                '-fflags', '+igndts',
+            ]
+            
+            # Logo varsa input olarak ekle
             if os.path.exists('logo.png'):
-                logo_input = ['-i', 'logo.png']
+                command.extend(['-i', 'logo.png'])
+                
                 filter_str = (
                     '[0:v]scale=1280:720:force_original_aspect_ratio=decrease,'
                     'pad=1280:720:(ow-iw)/2:(oh-ih)/2:black[v0];'
@@ -101,7 +112,6 @@ def start_stream():
                     'x=23:y=h-text_h-20[v]'
                 )
             else:
-                logo_input = []
                 filter_str = (
                     '[0:v]scale=1280:720:force_original_aspect_ratio=decrease,'
                     'pad=1280:720:(ow-iw)/2:(oh-ih)/2:black[v0];'
@@ -110,18 +120,9 @@ def start_stream():
                     'fontcolor=white:fontsize=22:line_spacing=6:'
                     'x=20:y=h-text_h-20[v]'
                 )
-
-            command = [
-                'ffmpeg',
-                '-user_agent', STREAM_USER_AGENT,
-                '-re',
-                '-i', STREAM_SOURCE,
-                # M3U8 için özel parametreler
-                '-analyzeduration', '2147483647',
-                '-probesize', '2147483647',
-                '-fflags', '+igndts',
-                '-fps_mode', 'cfr'
-            ] + logo_input + [
+            
+            # Filtre ve output parametreleri
+            command.extend([
                 '-filter_complex', filter_str,
                 '-map', '[v]', '-map', '0:a?',
                 '-c:v', 'libx264', '-preset', 'veryfast',
@@ -130,8 +131,9 @@ def start_stream():
                 '-g', '50',
                 '-c:a', 'aac', '-b:a', '128k', '-ar', '44100',
                 '-f', 'flv', rtmp_server
-            ]
+            ])
 
+            print_colored(Colors.YELLOW, "📹 FFmpeg başlatılıyor...")
             process = subprocess.Popen(command)
             process.wait()
 
