@@ -26,7 +26,7 @@ rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
 STREAM_SOURCE = "https://cdn.codenet.lol/streamgo/stremgo123/4864.m3u8"
 
-LOGO_URL = "https://i.hizliresim.com/uqid8yei.png"
+LOGO_URL = "https://raw.githubusercontent.com/mutlumedya/cine/refs/heads/main/telegram.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 STREAM_USER_AGENT = "VLC/3.0.18 LibVLC/3.0.18"
