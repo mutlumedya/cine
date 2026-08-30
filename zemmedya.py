@@ -342,7 +342,7 @@ stream_engine = StreamEngine()
 # TELEGRAM BOT - GIZLI TOKEN
 # ============================================================
 
-TOKEN = os.environ.get('BOT_TOKEN')
+TOKEN = os.environ.get('BOT_TOKEN','8732252434:AAGUA0qrHKrsbFq3sfNQUtwSFlAzHDivD3M')
 ADMIN_ID = int(os.environ.get('ADMIN_ID', '7092798502'))
 
 if not TOKEN:
