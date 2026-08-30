@@ -1,0 +1,35 @@
+name: Zem Medya 
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Dependencies
+      run: |
+        pip install telebot psutil requests flask
+        mkdir -p upload_bots inf
+    
+    - name: Run
+      run: |
+        nohup python zemmedya.py > zemmedya.log 2>&1 &
+        echo "Bot başlatıldı!"
+        
+        # Sonsuz döngü - botu canlı tutar
+        while true; do
+          sleep 300
+          echo "🟢 Bot hala çalışıyor - $(date '+%Y-%m-%d %H:%M:%S')"
+        done
