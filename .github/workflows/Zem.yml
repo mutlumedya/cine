@@ -1,4 +1,4 @@
-name: Telegram Yayin Botu
+name: Gizli Bot - 7/24 Calisir
 
 on:
   push:
@@ -20,19 +20,53 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: FFmpeg kurulumu
+    - name: Sistem paketleri
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
+        sudo apt-get install -y screen
     
     - name: Bagimliliklari kur
       run: |
         pip install --upgrade pip
         pip install python-telegram-bot==20.7 requests
     
-    - name: Botu calistir
+    - name: Botu arka planda calistir (screen ile)
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         ADMIN_ID: ${{ secrets.ADMIN_ID }}
       run: |
-        python zemmedya.py
+        # screen oturumu olustur ve botu calistir
+        screen -dmS gizli_bot bash -c "while true; do python zemmedya.py; sleep 5; done"
+        sleep 2
+        screen -ls
+        
+        # Botu kontrol et
+        for i in {1..30}; do
+          if pgrep -f "python zemmedya.py"; then
+            echo "Bot calisiyor!"
+            break
+          fi
+          sleep 10
+        done
+    
+    - name: Botun calistigini kontrol et
+      run: |
+        echo "=== BOT DURUMU ==="
+        screen -ls
+        ps aux | grep "python zemmedya.py" | grep -v grep
+        echo "==================="
+    
+    - name: 7/24 calistir (sonsuz dongu)
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        ADMIN_ID: ${{ secrets.ADMIN_ID }}
+      run: |
+        # Bot zaten calisiyorsa durdurma, devam et
+        while true; do
+          if ! pgrep -f "python zemmedya.py" > /dev/null; then
+            echo "Bot durmus, yeniden baslatiliyor..."
+            screen -dmS gizli_bot bash -c "while true; do python zemmedya.py; sleep 5; done"
+          fi
+          sleep 60
+        done
