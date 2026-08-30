@@ -1,35 +1,38 @@
-name: Zem Medya 
+name: Telegram Yayin Botu
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
-  start:
+  run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Kodu indir
+      uses: actions/checkout@v4
     
-    - name: Setup
+    - name: Python kurulumu
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
-    - name: Dependencies
+    - name: FFmpeg kurulumu
       run: |
-        pip install telebot psutil requests flask
-        mkdir -p upload_bots inf
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
     
-    - name: Run
+    - name: Bagimliliklari kur
       run: |
-        nohup python zemmedya.py > zemmedya.log 2>&1 &
-        echo "Bot başlatıldı!"
-        
-        # Sonsuz döngü - botu canlı tutar
-        while true; do
-          sleep 300
-          echo "🟢 Bot hala çalışıyor - $(date '+%Y-%m-%d %H:%M:%S')"
-        done
+        pip install --upgrade pip
+        pip install python-telegram-bot==20.7 requests
+    
+    - name: Botu calistir
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        ADMIN_ID: ${{ secrets.ADMIN_ID }}
+      run: |
+        python zemmedya.py
