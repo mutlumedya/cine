@@ -20,7 +20,7 @@ def print_colored(color, text):
 
 # Telegram RTMP ayarları
 RTMP_URL = "rtmp://ssh101.bozztv.com:1935/ssh101/"
-STREAM_KEY = "66666"
+STREAM_KEY = "6666"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
