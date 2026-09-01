@@ -24,7 +24,7 @@ STREAM_KEY = "6666"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
-STREAM_SOURCE = "https://stream41.radyotelekom.com.tr/stream/m3u8/c57a17d27e38f8c2db989a8aa45868b2/c57a17d27e38f8c2db989a8aa45868b2.m3u8"
+STREAM_SOURCE = "https://autopilot.catcast.tv/mobile.m3u8?channel_id=50753&token=b1ae95f9bec2294517cec0181a0ac613&server=v2.catcast.tv"
 
 LOGO_URL = "https://resmim.net/cdn/2026/08/07/Eek4RC.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
