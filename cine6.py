@@ -26,7 +26,7 @@ rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
 STREAM_SOURCE = "https://stream41.radyotelekom.com.tr/stream/m3u8/c57a17d27e38f8c2db989a8aa45868b2/c57a17d27e38f8c2db989a8aa45868b2.m3u8"
 
-LOGO_URL = "https://raw.githubusercontent.com/mutlumedya/cine/refs/heads/main/tegram.png"
+LOGO_URL = "https://resmim.net/cdn/2026/08/07/Eek4RC.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 STREAM_USER_AGENT = "VLC/3.0.18 LibVLC/3.0.18"
