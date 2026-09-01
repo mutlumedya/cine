@@ -19,7 +19,7 @@ def print_colored(color, text):
     print(f"{color}{text}{Colors.NC}")
 
 # Telegram RTMP ayarları
-RTMP_URL = "rtmp://ssh101.bozztv.com:1935/ssh101"
+RTMP_URL = "rtmp://ssh101.bozztv.com:1935/ssh101/"
 STREAM_KEY = "66666"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
