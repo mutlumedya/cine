@@ -19,14 +19,14 @@ def print_colored(color, text):
     print(f"{color}{text}{Colors.NC}")
 
 # Telegram RTMP ayarları
-RTMP_URL = "rtmps://dc4-1.rtmp.t.me/s/"
-STREAM_KEY = "3628247749:CP9SdqFTFOg3vd_nWef_Aw"
+RTMP_URL = "rtmp://ssh101.bozztv.com:1935/ssh101"
+STREAM_KEY = "66666"
 rtmp_server = f"{RTMP_URL}{STREAM_KEY}"
 
 # DOĞRUDAN YAYIN KAYNAĞI (M3U8 veya direkt stream URL)
-STREAM_SOURCE = "https://stream41.radyotelekom.com.tr/stream/m3u8/bfa921dfddb1846b74069b68904d64e6/bfa921dfddb1846b74069b68904d64e6.m3u8"
+STREAM_SOURCE = "https://stream41.radyotelekom.com.tr/stream/m3u8/c57a17d27e38f8c2db989a8aa45868b2/c57a17d27e38f8c2db989a8aa45868b2.m3u8"
 
-LOGO_URL = "https://raw.githubusercontent.com/mutlumedya/cine/refs/heads/main/telegram.png"
+LOGO_URL = "https://raw.githubusercontent.com/mutlumedya/cine/refs/heads/main/tegram.png"
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 STREAM_USER_AGENT = "VLC/3.0.18 LibVLC/3.0.18"
