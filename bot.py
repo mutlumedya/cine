@@ -53,7 +53,7 @@ def keep_alive():
     print("Flask Keep-Alive server started.")
 
 # --- Configuration ---
-TOKEN = '8615849365:AAESB6yb30domcOWa7H40lVDZ4VJzX2Yf88'
+TOKEN = '8463223086:AAFAC9A1FYtj5JdyCJBNt-qvl-OPH4COE3M'
 OWNER_ID = 7092798502
 ADMIN_ID = 7092798502
 YOUR_USERNAME = '@mutluvisiontv'
