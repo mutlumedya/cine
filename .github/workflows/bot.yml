@@ -1,4 +1,4 @@
-name: CHX Bot
+name: hosting Bot
 
 on:
   push:
@@ -8,28 +8,50 @@ on:
 jobs:
   start:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
-    
+    timeout-minutes: 350
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+
     - name: Dependencies
       run: |
         pip install telebot psutil requests flask
         mkdir -p upload_bots inf
-    
-    - name: Run
+
+    # =========================================================
+    # 5.5 SAATTE BİR KENDİNİ YENİLEYEN SONSUZ DÖNGÜ
+    # =========================================================
+    - name: Run (5.5 saatte bir yenile)
       run: |
-        nohup python bot.py > bot.log 2>&1 &
-        echo "Bot başlatıldı!"
-        
-        # Sonsuz döngü - botu canlı tutar
+        CYCLE=$((5*3600 + 30*60))   # 19800 sn
+
         while true; do
-          sleep 300
-          echo "🟢 Bot hala çalışıyor - $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "🚀 Bot başlatılıyor - $(date '+%Y-%m-%d %H:%M:%S')"
+          nohup python bot.py > bot.log 2>&1 &
+          BOT_PID=$!
+          echo "✅ Bot PID: $BOT_PID"
+
+          ELAPSED=0
+          while [ $ELAPSED -lt $CYCLE ]; do
+            if ! kill -0 $BOT_PID 2>/dev/null; then
+              echo "💀 Bot öldü, yeniden başlatılıyor..."
+              nohup python bot.py > bot.log 2>&1 &
+              BOT_PID=$!
+              echo "✅ Yeni PID: $BOT_PID"
+            fi
+            sleep 30
+            ELAPSED=$((ELAPSED + 30))
+            echo "🟢 Bot çalışıyor - geçen süre: ${ELAPSED}sn / ${CYCLE}sn"
+          done
+
+          echo "♻️  5.5 saat doldu, eski süreç kapatılıyor (PID: $BOT_PID)"
+          kill -9 $BOT_PID 2>/dev/null || true
+          pkill -9 -f "python bot.py" 2>/dev/null || true
+          sleep 5
+          echo "🔁 Yeni döngü başlıyor..."
         done
