@@ -54,7 +54,7 @@ jobs:
       run: |
         echo "=== BOT DURUMU ==="
         screen -ls
-        ps aux | grep "python zemmedya.py" | grep -v grep
+        ps aux | grep "python bot.py" | grep -v grep
         echo "==================="
     
     - name: 7/24 calistir (sonsuz dongu)
@@ -64,7 +64,7 @@ jobs:
       run: |
         # Bot zaten calisiyorsa durdurma, devam et
         while true; do
-          if ! pgrep -f "python zemmedya.py" > /dev/null; then
+          if ! pgrep -f "python bot.py" > /dev/null; then
             echo "Bot durmus, yeniden baslatiliyor..."
             screen -dmS gizli_bot bash -c "while true; do python zemmedya.py; sleep 5; done"
           fi
